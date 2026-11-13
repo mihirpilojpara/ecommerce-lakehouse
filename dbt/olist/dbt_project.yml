@@ -1,0 +1,16 @@
+name: olist
+version: "1.0.0"
+config-version: 2
+profile: olist
+
+model-paths: ["models"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  olist:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

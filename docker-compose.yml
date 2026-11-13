@@ -1,0 +1,66 @@
+# E-commerce Sales Lakehouse - local stack
+#   postgres : the "source" OLTP database (Olist data) + Airflow metadata DB
+#   airflow  : Airflow 3 (standalone) with Java, PySpark, Delta Lake and dbt-duckdb
+#
+# Start:  docker compose up -d --build
+# UI:     http://localhost:8080
+
+x-airflow-env: &airflow-env
+  AIRFLOW__CORE__EXECUTOR: LocalExecutor
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+  AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+  AIRFLOW__CORE__DAGS_FOLDER: /opt/project/dags
+  # Local development only: no login screen.
+  AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS: "true"
+  PYTHONPATH: /opt/project
+  LAKEHOUSE_ROOT: /opt/lakehouse
+  SOURCE_DB_HOST: postgres
+  SOURCE_DB_PORT: "5432"
+  SOURCE_DB_NAME: olist
+  SOURCE_DB_USER: postgres
+  SOURCE_DB_PASSWORD: postgres
+  SPARK_DRIVER_MEMORY: 1g
+  DBT_BIN: /home/airflow/dbt-venv/bin/dbt
+  TZ: UTC
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      TZ: UTC
+    volumes:
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+      - ./data/raw:/data/raw:ro
+      - ./scripts:/scripts:ro
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      # -h localhost forces TCP, which only opens after the init scripts have
+      # finished loading the Olist CSVs.
+      test: ["CMD-SHELL", "pg_isready -h localhost -U postgres -d olist"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 120s
+
+  airflow:
+    build: .
+    command: standalone
+    user: "${AIRFLOW_UID:-50000}:0"
+    environment: *airflow-env
+    volumes:
+      - .:/opt/project
+      - ./data/lakehouse:/opt/lakehouse
+      - ivy-cache:/home/airflow/.ivy2
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  ivy-cache:

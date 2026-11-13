@@ -1,0 +1,27 @@
+# Data never goes in git: download it (see README).
+data/raw/*
+!data/raw/.gitkeep
+data/lakehouse/*
+!data/lakehouse/.gitkeep
+
+# dbt
+dbt/olist/target/
+dbt/olist/dbt_packages/
+dbt/olist/logs/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Spark / Airflow
+spark-warehouse/
+metastore_db/
+derby.log
+logs/
+
+.env
+.DS_Store

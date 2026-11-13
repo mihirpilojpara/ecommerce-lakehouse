@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: mart_monthly_revenue
+    description: One row per month.
+    columns:
+      - name: month_start
+        tests: [unique, not_null]
+      - name: orders
+        tests: [not_null]
+
+  - name: mart_seller_performance
+    description: One row per seller.
+    columns:
+      - name: seller_id
+        tests: [unique, not_null]
+
+  - name: mart_category_sales
+    description: One row per product category (English name).
+    columns:
+      - name: category
+        tests: [unique, not_null]

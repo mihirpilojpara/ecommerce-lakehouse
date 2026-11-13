@@ -1,0 +1,10 @@
+olist:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # DuckDB reads the gold Delta tables directly and stores the marts in this file.
+      path: "{{ env_var('LAKEHOUSE_ROOT', '/opt/lakehouse') }}/warehouse/olist.duckdb"
+      extensions:
+        - delta
+      threads: 2
