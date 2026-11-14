@@ -1,9 +1,11 @@
 name: CI
 
+# Branch flow: feature work -> development (CI) -> pull request -> main (production)
 on:
   push:
-    branches: [main]
+    branches: [development, main]
   pull_request:
+    branches: [development, main]
 
 jobs:
   test:
